@@ -26,7 +26,7 @@ SECRET_KEY = 's_vyf(o$*zddt0p8-5z#-$0d)_98k42+x#d&8m+ow4o%$f*z$s'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_swagger',
 ]
 
 MIDDLEWARE = [
@@ -80,14 +81,22 @@ WSGI_APPLICATION = 'digital_identity.wsgi.application'
 dotenv_path = os.path.join(os.path.dirname(BASE_DIR), 'config\.env')
 load_dotenv(dotenv_path)
 
+# DATABASES = {
+#     'default': {
+# 	    'ENGINE': 'django.db.backends.postgresql',
+# 		'NAME': os.getenv('db_name'),
+# 		'USER': os.getenv('db_username'),
+# 		'PASSWORD': os.getenv('db_password'),
+# 		'HOST': os.getenv('db_hostname'),
+# 		'PORT': os.getenv('db_port'),
+#     }
+# }
+
+
 DATABASES = {
     'default': {
-	    'ENGINE': 'django.db.backends.postgresql',
-		'NAME': os.getenv('db_name'),
-		'USER': os.getenv('db_username'),
-		'PASSWORD': os.getenv('db_password'),
-		'HOST': os.getenv('db_hostname'),
-		'PORT': os.getenv('db_port'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'mydatabase',
     }
 }
 

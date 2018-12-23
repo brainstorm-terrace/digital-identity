@@ -17,7 +17,12 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
 
+from rest_framework_swagger.views import get_swagger_view
+
+schema_view = get_swagger_view(title='Swagger Docs')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path(r'docs/', schema_view),
     path(r'api/', include('user_profile.urls'))
 ]
