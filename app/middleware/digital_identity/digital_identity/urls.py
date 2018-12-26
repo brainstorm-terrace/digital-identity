@@ -19,6 +19,8 @@ from django.conf.urls import include, url
 
 from rest_framework_swagger.views import get_swagger_view
 
+import debug_toolbar
+
 schema_view = get_swagger_view(title='Swagger Docs')
 
 urlpatterns = [
@@ -26,4 +28,6 @@ urlpatterns = [
     path(r'docs/', schema_view),
     path(r'api/', include('user_profile.urls')),
     url(r'^auth/', include('rest_framework_social_oauth2.urls')),
+    path('__debug__/', include(debug_toolbar.urls)),
+]
 ]
