@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'user_profile',
+    'users_categories',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'social_django',
     'rest_framework_social_oauth2',
     'debug_toolbar',
+    'phonenumber_field',
 ]
 
 MIDDLEWARE = [

@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from . import models
 
-class userProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer for user profile objects"""
 
     class Meta:

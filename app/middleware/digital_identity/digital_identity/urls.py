@@ -29,5 +29,5 @@ urlpatterns = [
     path(r'api/', include('user_profile.urls')),
     url(r'^auth/', include('rest_framework_social_oauth2.urls')),
     path('__debug__/', include(debug_toolbar.urls)),
-]
+    url(r'users-categories/', include('users_categories.urls')),
 ]

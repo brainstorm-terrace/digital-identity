@@ -12,7 +12,7 @@ from . import permissions
 class UserProfileViewSet(viewsets.ModelViewSet):
     """Handles creating, updating and deleting profiles"""
 
-    serializer_class = serializer.userProfileSerializer
+    serializer_class = serializer.UserProfileSerializer
     queryset = models.UserProfile.objects.all()
     authentication_classes = (TokenAuthentication,)
     permission_classes = (permissions.UpdateOwnProfile,)
