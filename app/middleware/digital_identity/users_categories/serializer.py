@@ -6,19 +6,19 @@ class UserDetailsSerializer(serializers.ModelSerializer):
     """Serializer for user profile objects"""
 
     class Meta:
+        user_id = "Madhu"
         model = models.UserDetail
         fields = (
-            'id', 'user_id', 'user_name', 'email', 'gender',
+            'id', 'user_id', 'email', 'user_name',
         )
 
     def create(self, validated_data):
         """Create and return a new user"""
-
+        print("validated_data", validated_data)
         user = models.UserDetail(
             user_id = validated_data['user_id'],
             user_name=validated_data['user_name'],
             email = validated_data['email'],
-            gender=validated_data['gender'],
         )
         user.save()
         return user
