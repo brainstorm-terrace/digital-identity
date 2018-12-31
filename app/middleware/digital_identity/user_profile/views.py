@@ -3,15 +3,19 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from . import serializer
 from . import models
 from . import permissions
-
 from .serializer import UserProfileSerializer
-from rest_framework.views import APIView
 
-import requests, json
+from dotenv import load_dotenv
+from django.conf import settings
+
+import requests
+import json
+import os
 
 # Create your views here.
 
@@ -39,32 +43,28 @@ class LoginViewSet(viewsets.ViewSet):
 
 
 class UserProfileView(APIView):
-    """
-        User Profile APIView.
-    """
+    """ User Profile APIView. """
+
     def post(self, request):
-        """
-            Creates a new user if username and Email didn't exist in the database.
-        """
+        """ Creates a new user if username and Email didn't exist in the database. """
+
         user_data = request.data
-        print(user_data)
-        serializer = UserProfileSerializer(data=user_data)
-        if serializer.is_valid():
-            serializer.save()
+        user_profile_serializer = UserProfileSerializer(data=user_data)
+        if user_profile_serializer.is_valid():
+            user_profile_serializer.save()
 
             '''Create user_id'''
             user_id = self.create_user_id(user_data)
 
             user_dict = {'user_id':user_id}
-            user_dict.update(serializer.data)
+            user_dict.update(user_profile_serializer.data)
             return Response(user_dict, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(user_profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
     def create_user_id(self, user_data):
-        """
-             Calls "users-categories/user-detail" api to create a new user and returns user_id.
-        """
+        """ Method to call "users-categories/user-detail" api and return user_id.. """
+
         user_details_request_data = {
             "user_detail":
                 {
@@ -72,7 +72,11 @@ class UserProfileView(APIView):
                     "email": user_data['email'],
                 }
         }
-        api_response = requests.post('http://127.0.0.1:8000/users-categories/user-detail', json=user_details_request_data)
+
+        dotenv_path = os.path.join(os.path.dirname(settings.BASE_DIR), 'config\.env')
+        load_dotenv(dotenv_path)
+        url = os.getenv('user_id_api_endpoint')
+        api_response = requests.post(url, json=user_details_request_data)
         user_details_response = api_response.json()
 
         return user_details_response['user_id']
