@@ -58,6 +58,36 @@ class UserProfileView(APIView):
             return Response(user_dict, status=status.HTTP_201_CREATED)
         return Response(user_profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def put(self, request,pk):
+        """Update name , email and password of a particular user."""
+        user_instance = models.UserProfile.objects.get(pk=pk)
+        requested_data = request.data
+        user_profile_serializer = UserProfileSerializer(user_instance, data=requested_data, partial=True)
+        if user_profile_serializer.is_valid():
+            user_profile_serializer.save()
+            return Response(user_profile_serializer.data, status=status.HTTP_201_CREATED)
+        return JsonResponse("Please provide valid details", safe=False)
+
+    def delete(self, request,pk=None):
+        """Delete existing user from the database"""
+        request_data = dict(request.GET)
+        name = request_data.get('name')
+        if name is not None :
+            name = name[0]
+            try:
+                user_instance = models.UserProfile.objects.get(name=name)
+                user_instance.delete()
+                return Response("User {} is deleted".format(user_instance))
+            except Exception as e:
+                return Response("User doesn't exist. Please provide a valid user.")
+        else:
+            try:
+                user_instance = models.UserProfile.objects.get(pk=pk)
+                user_instance.delete()
+                return Response("User {} is deleted".format(user_instance))
+            except Exception as e:
+                return Response("User doesn't exist. Please provide a valid user.")
+
     def create_user_id(self, user_data):
         """ Method to call "users-categories/user-detail" api and return user_id.. """
 
