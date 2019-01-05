@@ -12,6 +12,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
             'id', 'user_id', 'email', 'user_name',
         )
 
+
     def create(self, validated_data):
         """Create and return a new user"""
         print("validated_data", validated_data)
@@ -22,4 +23,5 @@ class UserDetailsSerializer(serializers.ModelSerializer):
         )
         user.save()
         return user
+
 
