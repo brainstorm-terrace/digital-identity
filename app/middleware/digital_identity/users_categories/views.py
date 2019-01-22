@@ -8,6 +8,11 @@ from django.http import JsonResponse
 from django.db.models import Q
 from . import models
 import hashlib
+import os
+import sqlite3
+from digital_identity import settings
+import pandas as pd
+
 
 # Create your views here.
 class UserDetailsView(APIView):
@@ -52,24 +57,56 @@ class UserDetailsView(APIView):
 
         return JsonResponse(list(user_qs), safe=False)
 
-    def delete(self, request,pk=None):
-        """Delete existing user from the database"""
-        request_data = dict(request.GET)
-        user_name = request_data.get('user_name')
-        print(user_name)
-        if user_name is not None:
-            user_name = user_name[0]
-            print(user_name)
-            try:
-                user_instance = models.UserDetail.objects.get(user_name=user_name)
-                user_instance.delete()
-                return Response("User {} is deleted".format(user_instance))
-            except Exception as e:
-                return Response("User doesn't exist. Please provide a valid user.")
+    def put(self, request):
+        """Update details of a particular user."""
+        db_path = os.path.join(settings.BASE_DIR, settings.DATABASES['default']['NAME'])
+        conn = sqlite3.connect(db_path)
+        user_data = request.data
+        print(user_data)
+        user_data_dict = {user['user_name']:user for user in user_data}
+
+        print(user_data_dict)
+
+        if len(user_data_dict.keys())>1:
+            user_data_dict_keys = tuple(user_data_dict.keys())
+            sql_query = "SELECT * FROM users_categories_userdetail WHERE user_name in {}".format(user_data_dict_keys)
+            delete_query = "DELETE from users_categories_userdetail WHERE user_name in {}".format(user_data_dict_keys)
         else:
-            try:
-                user_instance = models.UserDetail.objects.get(pk=pk)
-                user_instance.delete()
-                return Response("User {} is deleted".format(user_instance))
-            except Exception as e:
-                return Response("User doesn't exist. Please provide a valid user.")
+            user_data_dict_keys = tuple(user_data_dict.keys())[0]
+            sql_query = "SELECT * FROM users_categories_userdetail WHERE user_name in ('{}')".format(user_data_dict_keys)
+            delete_query = "DELETE from users_categories_userdetail WHERE user_name in ('{}')".format(user_data_dict_keys)
+
+        print(user_data_dict_keys)
+
+        # sql_query = "SELECT * FROM users_categories_userdetail WHERE user_name in {}".format(user_data_dict_keys)
+        print(sql_query)
+        pd_users = pd.read_sql(sql_query, conn)
+
+        pd_user_data = pd.DataFrame(data=user_data, columns=list(pd_users.columns.values))
+        left_name = pd_users.set_index('user_name')
+        right_name = pd_user_data.set_index('user_name')
+
+        res = left_name.reindex(columns=left_name.columns.union(right_name.columns))
+        res.update(right_name)
+        res.reset_index(inplace=True)
+
+        # conn.execute('DELETE from users_categories_userdetail WHERE user_name in {}'.format(user_data_dict_keys))
+        conn.execute(delete_query)
+        res.to_sql(name='users_categories_userdetail', con=conn, if_exists='append', index=False)
+
+        conn.close()
+        return JsonResponse("Update Successful", safe=False)
+
+
+    def delete(self, request):
+        """Delete existing user from the database - set is_active flag to false"""
+        request_data = dict(request.GET)
+
+        if request_data:
+            user_name = {key + '__in': value for key, value in request_data.items() if key == 'user_name'}
+            kwargs_email = {key + '__in': value for key, value in request_data.items() if key == 'email'}
+            models.UserDetail.objects.filter(Q(**user_name) | Q(**kwargs_email)).update(is_active=False)
+            print("Updated is_active status")
+            return JsonResponse("Deleted the user", safe=False)
+        else:
+            return JsonResponse("Plese select a user to be deleted", self=False)
